@@ -36,8 +36,13 @@ services:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       SEED_ENABLED: ${SEED_ENABLED:-false}
+      # Orígenes permitidos para las peticiones del navegador (frontend).
+      # En local: "*" o http://localhost:5173. En producción: la URL real
+      # de Amplify, ej: https://main.xxxx.amplifyapp.com
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
     ports:
       - "8002:8080"         # En producción, este puerto queda detrás del balanceador / API Gateway
 
 volumes:
   db_vehiculos_data:
+
