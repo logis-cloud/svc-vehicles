@@ -1,0 +1,21 @@
+# Compose de PRODUCCIÓN para la VM del API (solo microservicio, sin BD).
+# La base de datos vive en otra VM/contenedor aparte (ver DB_HOST más abajo).
+# Para correr todo en un solo host durante desarrollo local, usa en cambio
+# docker-compose.local.yml (levanta Postgres + API juntos).
+services:
+  ms-vehiculos:
+    build: .
+    container_name: ms-vehiculos
+    restart: unless-stopped
+    environment:
+      # IP privada (o hostname resoluble) de la VM/contenedor de base de
+      # datos. Debe venir del .env de esta VM — no hay valor por defecto
+      # a propósito, para no arrancar apuntando a localhost por error.
+      DB_HOST: ${DB_HOST:-172.31.7.86}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-db_vehiculos}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgrespassword}
+      SEED_ENABLED: ${SEED_ENABLED:-false}
+    ports:
+      - "8002:8080"         # En producción, este puerto queda detrás del balanceador / API Gateway
