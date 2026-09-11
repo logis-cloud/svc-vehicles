@@ -1,48 +1,21 @@
+# Compose de PRODUCCIÓN para la VM del API (solo microservicio, sin BD).
+# La base de datos vive en otra VM/contenedor aparte (ver DB_HOST más abajo).
+# Para correr todo en un solo host durante desarrollo local, usa en cambio
+# docker-compose.local.yml (levanta Postgres + API juntos).
 services:
-  db-vehiculos:
-    image: postgres:16-alpine
-    container_name: db-vehiculos
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-vehiculos_db}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-    ports:
-      - "5433:5432"        # Exponer solo en desarrollo. En producción esta MV no es pública.
-    volumes:
-      - db_vehiculos_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   ms-vehiculos:
     build: .
     container_name: ms-vehiculos
     restart: unless-stopped
-    depends_on:
-      db-vehiculos:
-        condition: service_healthy
     environment:
-      # DB_HOST usa el nombre del contenedor porque en LOCAL ambos servicios
-      # comparten la red por defecto de este compose. En PRODUCCIÓN (3ra VM
-      # separada para las bases de datos) hay que sobreescribir DB_HOST con
-      # la IP privada de esa VM al desplegar, igual que en el microservicio
-      # de Clientes y el de Envíos.
-      DB_HOST: db-vehiculos
-      DB_PORT: 5432
+      # IP privada (o hostname resoluble) de la VM/contenedor de base de
+      # datos. Debe venir del .env de esta VM — no hay valor por defecto
+      # a propósito, para no arrancar apuntando a localhost por error.
+      DB_HOST: ${DB_HOST:?Debes definir DB_HOST con la IP privada de la VM de base de datos}
+      DB_PORT: ${DB_PORT:-5432}
       DB_NAME: ${DB_NAME:-vehiculos_db}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       SEED_ENABLED: ${SEED_ENABLED:-false}
-      # Orígenes permitidos para las peticiones del navegador (frontend).
-      # En local: "*" o http://localhost:5173. En producción: la URL real
-      # de Amplify, ej: https://main.xxxx.amplifyapp.com
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
     ports:
       - "8002:8080"         # En producción, este puerto queda detrás del balanceador / API Gateway
-
-volumes:
-  db_vehiculos_data:
-

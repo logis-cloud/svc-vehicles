@@ -11,7 +11,11 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      # El schema (tablas, secuencias) lo crea un script SQL propio en la VM
+      # de base de datos, no esta app. "validate" solo verifica que las
+      # entidades calcen con lo que ya existe y falla con un mensaje claro
+      # si no, en vez de intentar alterar tablas que no le pertenecen.
+      ddl-auto: validate
     show-sql: false
     open-in-view: false
     properties:
