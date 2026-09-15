@@ -22,10 +22,7 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        # --- Batching habilitado: sin esto, saveAll() hace un INSERT por fila,
-        # lo cual es demasiado lento para los 20,000+ registros del seed.
-        # Equivale en espíritu al bulk_insert_mappings que usa el microservicio
-        # de Clientes (Python/SQLAlchemy) para el mismo propósito.
+        # --- Batching habilitado: optimiza las inserciones y actualizaciones masivas en Hibernate.
         jdbc:
           batch_size: 500
         order_inserts: true
@@ -39,10 +36,6 @@ springdoc:
     operationsSorter: method
   api-docs:
     path: /v3/api-docs
-
-app:
-  seed:
-    enabled: ${SEED_ENABLED:false}
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:*}

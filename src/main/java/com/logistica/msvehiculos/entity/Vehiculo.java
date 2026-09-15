@@ -22,8 +22,7 @@ public class Vehiculo {
      * devuelto por la BD antes de poder encolar el siguiente insert, lo que
      * desactiva el batching (hibernate.jdbc.batch_size) por completo. Con
      * SEQUENCE (soportado nativamente por PostgreSQL) Hibernate sí puede
-     * agrupar los inserts en lotes, algo necesario para que el seed de
-     * 20,000+ registros sea rápido.
+     * agrupar los inserts en lotes para mayor eficiencia.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "vehiculo_seq")
