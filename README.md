@@ -11,7 +11,6 @@ del proyecto (los otros dos son Clientes [Python/FastAPI/MySQL] y Envíos
 - **Spring Data JPA** (Hibernate) sobre **PostgreSQL 16**
 - **Bean Validation** (jakarta.validation) para validar los DTOs de entrada
 - **springdoc-openapi** para Swagger UI
-- **datafaker** para generar datos ficticios de prueba
 - **Maven** + **Docker / Docker Compose**
 
 ## Diagrama Entidad/Relación (PostgreSQL)
@@ -83,7 +82,6 @@ un cliente sí borra en cascada sus direcciones).
 | PATCH | `/conductores/{id}/asignar-vehiculo/{idVehiculo}` | Asigna/reasigna vehículo (rotación por turno) |
 | PATCH | `/conductores/{id}/liberar` | Libera al conductor de su vehículo actual |
 | DELETE | `/conductores/{id}` | Elimina un conductor |
-| POST | `/admin/seed` | *(solo dev, requiere `SEED_ENABLED=true`)* Carga datos ficticios |
 
 Swagger UI: **`/docs`** — Especificación OpenAPI (JSON): **`/v3/api-docs`**
 
@@ -99,40 +97,6 @@ docker compose up --build
 - API disponible en `http://localhost:8002`
 - Swagger en `http://localhost:8002/docs`
 - PostgreSQL en `localhost:5433` (solo expuesto en desarrollo; internamente el contenedor usa el puerto 5432)
-
-## Cargar datos ficticios (≥20,000 registros — requisito de la rúbrica)
-
-El seeder está apagado por defecto. Para habilitarlo, en `.env`:
-
-```
-SEED_ENABLED=true
-```
-
-Con el stack corriendo:
-
-```bash
-curl -X POST "http://localhost:8002/admin/seed?vehiculos=4000&conductores=20000"
-```
-
-Esto inserta por defecto **4,000 vehículos** y **20,000 conductores** usando
-`datafaker`, en lotes de 1,000 con commit por lote (igual que el patrón que
-usa `seed_data.py` en el microservicio de Clientes), para que la carga sea
-rápida y no dependa de una única transacción gigante. `conductores` es la
-tabla de esta base de datos que cumple el mínimo de 20,000 registros pedido
-por la rúbrica; se eligió esa y no `vehiculos` porque tiene más sentido de
-negocio: una flota real es pequeña, pero el historial de personal/rotación
-de conductores sí puede ser grande. Los volúmenes son configurables por
-query param si necesitas más para las pruebas de ingesta hacia S3.
-
-**Nota técnica:** DNI, número de licencia y placa se generan garantizando
-unicidad dentro de la corrida (usando `Set` en memoria), no solo al azar.
-A este volumen, generarlos completamente al azar sin control tiene una
-probabilidad real de colisión contra las columnas `UNIQUE`, lo que rompería
-el lote completo.
-
-Como con cualquier seed masivo: **corre solo una vez** sobre una base de
-datos vacía. Volver a correrlo no falla (los valores se siguen generando
-únicos dentro de esa corrida), pero duplicará conceptualmente los datos.
 
 ## Manejo de errores
 

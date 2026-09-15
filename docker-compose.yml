@@ -16,6 +16,5 @@ services:
       DB_NAME: ${DB_NAME:-db_vehiculos}
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgrespassword}
-      SEED_ENABLED: ${SEED_ENABLED:-false}
     ports:
       - "8002:8080"         # En producción, este puerto queda detrás del balanceador / API Gateway
