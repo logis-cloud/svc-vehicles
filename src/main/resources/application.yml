@@ -9,6 +9,22 @@ spring:
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # Sin esto, si la BD no responde en el primer intento, Hikari lanza
+      # una excepción al armar el pool y Spring Boot aborta el arranque
+      # (el contenedor muere). Con -1, el pool se crea igual y hace los
+      # intentos de conexión reales en segundo plano, cada vez que algo
+      # (ej. la validación de schema de Hibernate) pide una conexión.
+      initialization-fail-timeout: -1
+
+      # Cuánto espera cada intento individual de conexión antes de fallar
+      # y reintentar. 30s le da margen a MySQL/Postgres para terminar su
+      # inicialización de primer arranque (creación de tablas vía initdb.d).
+      connection-timeout: 30000
+
+      # Reintentos periódicos del pool mientras no logra conectar.
+      keepalive-time: 30000
+
   jpa:
     hibernate:
       # El schema (tablas, secuencias) lo crea un script SQL propio en la VM
